@@ -587,7 +587,6 @@
 
     saveToStorage();
     render();
-    setFeedback("並び順を更新しました。");
   }
 
   function onDragEnd(event) {
