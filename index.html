@@ -28,11 +28,7 @@
     </header>
 
     <main class="card-stack">
-      <section class="panel input-panel" aria-labelledby="add-item-heading">
-        <div class="panel-heading">
-          <h2 id="add-item-heading">買うものを追加</h2>
-        </div>
-
+      <section class="panel input-panel" aria-label="買い物項目を追加">
         <form id="add-form" class="add-form">
           <label class="sr-only" for="item-input">買い物項目</label>
           <input
@@ -42,7 +38,7 @@
             inputmode="text"
             autocomplete="off"
             maxlength="50"
-            placeholder="例: ヨーグルト"
+            placeholder="買うものを追加してね"
           >
           <button type="submit" class="primary-button">追加</button>
         </form>
@@ -54,36 +50,38 @@
           </summary>
 
           <div class="quick-add-body">
-            <div class="quick-tabs" role="tablist" aria-label="定番追加カテゴリ">
-              <button type="button" class="quick-tab-button is-active" id="tab-food" role="tab" aria-selected="true" aria-controls="panel-food" data-tab-target="food">食品</button>
-              <button type="button" class="quick-tab-button" id="tab-daily" role="tab" aria-selected="false" aria-controls="panel-daily" data-tab-target="daily">日用品</button>
-            </div>
-
-            <div id="panel-food" class="quick-tab-panel" role="tabpanel" aria-labelledby="tab-food" data-tab-panel="food">
-              <div class="chip-group">
-                <button type="button" class="chip-button" data-quick-add="牛乳">牛乳</button>
-                <button type="button" class="chip-button" data-quick-add="卵">卵</button>
-                <button type="button" class="chip-button" data-quick-add="米">米</button>
-                <button type="button" class="chip-button" data-quick-add="パン">パン</button>
-                <button type="button" class="chip-button" data-quick-add="パスタ">パスタ</button>
-                <button type="button" class="chip-button" data-quick-add="肉">肉</button>
-                <button type="button" class="chip-button" data-quick-add="魚">魚</button>
-                <button type="button" class="chip-button" data-quick-add="野菜">野菜</button>
-                <button type="button" class="chip-button" data-quick-add="ヨーグルト">ヨーグルト</button>
+            <div class="quick-add-body-inner">
+              <div class="quick-tabs" role="tablist" aria-label="定番追加カテゴリ">
+                <button type="button" class="quick-tab-button is-active" id="tab-food" role="tab" aria-selected="true" aria-controls="panel-food" data-tab-target="food">食品</button>
+                <button type="button" class="quick-tab-button" id="tab-daily" role="tab" aria-selected="false" aria-controls="panel-daily" data-tab-target="daily">日用品</button>
               </div>
-            </div>
 
-            <div id="panel-daily" class="quick-tab-panel" role="tabpanel" aria-labelledby="tab-daily" data-tab-panel="daily" hidden>
-              <div class="chip-group">
-                <button type="button" class="chip-button" data-quick-add="ティッシュ">ティッシュ</button>
-                <button type="button" class="chip-button" data-quick-add="トイレットペーパー">トイレット<br>ペーパー</button>
-                <button type="button" class="chip-button" data-quick-add="洗剤">洗剤</button>
-                <button type="button" class="chip-button" data-quick-add="シャンプー">シャンプー</button>
-                <button type="button" class="chip-button" data-quick-add="歯みがき粉">歯みがき粉</button>
-                <button type="button" class="chip-button" data-quick-add="ハンドソープ">ハンド<br>ソープ</button>
-                <button type="button" class="chip-button" data-quick-add="ボディソープ">ボディ<br>ソープ</button>
-                <button type="button" class="chip-button" data-quick-add="柔軟剤">柔軟剤</button>
-                <button type="button" class="chip-button" data-quick-add="ゴミ袋">ゴミ袋</button>
+              <div id="panel-food" class="quick-tab-panel" role="tabpanel" aria-labelledby="tab-food" data-tab-panel="food">
+                <div class="chip-group">
+                  <button type="button" class="chip-button" data-quick-add="牛乳">牛乳</button>
+                  <button type="button" class="chip-button" data-quick-add="卵">卵</button>
+                  <button type="button" class="chip-button" data-quick-add="米">米</button>
+                  <button type="button" class="chip-button" data-quick-add="パン">パン</button>
+                  <button type="button" class="chip-button" data-quick-add="パスタ">パスタ</button>
+                  <button type="button" class="chip-button" data-quick-add="肉">肉</button>
+                  <button type="button" class="chip-button" data-quick-add="魚">魚</button>
+                  <button type="button" class="chip-button" data-quick-add="野菜">野菜</button>
+                  <button type="button" class="chip-button" data-quick-add="ヨーグルト">ヨーグルト</button>
+                </div>
+              </div>
+
+              <div id="panel-daily" class="quick-tab-panel" role="tabpanel" aria-labelledby="tab-daily" data-tab-panel="daily" hidden>
+                <div class="chip-group">
+                  <button type="button" class="chip-button" data-quick-add="ティッシュ">ティッシュ</button>
+                  <button type="button" class="chip-button" data-quick-add="トイレットペーパー">トイレット<br>ペーパー</button>
+                  <button type="button" class="chip-button" data-quick-add="洗剤">洗剤</button>
+                  <button type="button" class="chip-button" data-quick-add="シャンプー">シャンプー</button>
+                  <button type="button" class="chip-button" data-quick-add="歯みがき粉">歯みがき粉</button>
+                  <button type="button" class="chip-button" data-quick-add="ハンドソープ">ハンド<br>ソープ</button>
+                  <button type="button" class="chip-button" data-quick-add="ボディソープ">ボディ<br>ソープ</button>
+                  <button type="button" class="chip-button" data-quick-add="柔軟剤">柔軟剤</button>
+                  <button type="button" class="chip-button" data-quick-add="ゴミ袋">ゴミ袋</button>
+                </div>
               </div>
             </div>
           </div>
@@ -91,26 +89,26 @@
       </section>
 
       <section class="panel" aria-labelledby="list-heading">
-        <div class="panel-heading">
-          <h2 id="list-heading">リスト</h2>
-          <p id="status-text" aria-live="polite">0件</p>
+        <div class="list-panel-heading">
+          <div class="list-panel-heading-row">
+            <h2 id="list-heading">買い物リスト</h2>
+            <p id="status-text" class="status-inline" aria-live="polite">0件</p>
+          </div>
         </div>
 
-        <div class="action-single">
-          <button type="button" id="check-all-button" class="ghost-button">すべてチェック</button>
+        <div id="list-stage" class="list-stage">
+          <div class="mitchie-character" aria-hidden="true">
+            <img src="./image/bagmitchie.png" alt="" class="mitchie-character-image">
+          </div>
+          <ul id="shopping-list" class="shopping-list" aria-label="買い物項目一覧"></ul>
+          <div id="message-bubble" class="empty-state" aria-live="polite">
+            <p id="message-bubble-text" class="empty-state-title">まだ空っぽです</p>
+          </div>
         </div>
 
-        <div class="action-row action-row-compact">
+        <div class="action-row action-row-bottom">
           <button type="button" id="clear-completed-button" class="ghost-button">完了済み削除</button>
           <button type="button" id="clear-all-button" class="ghost-button danger-button">すべて削除</button>
-        </div>
-
-        <p id="share-feedback" class="feedback" aria-live="polite"></p>
-
-        <ul id="shopping-list" class="shopping-list" aria-label="買い物項目一覧"></ul>
-        <div id="empty-state" class="empty-state">
-          <p class="empty-state-title">まだ空っぽです</p>
-          <p>みっちーが「まずは1つ入れてみよう」と待っています。</p>
         </div>
 
         <div class="share-block share-block-bottom">

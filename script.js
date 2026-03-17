@@ -12,20 +12,22 @@
 
   var addForm = document.getElementById("add-form");
   var itemInput = document.getElementById("item-input");
+  var listStage = document.getElementById("list-stage");
   var shoppingList = document.getElementById("shopping-list");
   var statusText = document.getElementById("status-text");
-  var emptyState = document.getElementById("empty-state");
+  var messageBubble = document.getElementById("message-bubble");
+  var messageBubbleText = document.getElementById("message-bubble-text");
   var shareButton = document.getElementById("share-button");
   var installButton = document.getElementById("install-button");
-  var checkAllButton = document.getElementById("check-all-button");
   var clearAllButton = document.getElementById("clear-all-button");
   var clearCompletedButton = document.getElementById("clear-completed-button");
-  var shareFeedback = document.getElementById("share-feedback");
   var installDialog = document.getElementById("install-dialog");
   var installDialogBody = document.getElementById("install-dialog-body");
   var listItemTemplate = document.getElementById("list-item-template");
   var quickTabButtons = Array.prototype.slice.call(document.querySelectorAll("[data-tab-target]"));
   var quickTabPanels = Array.prototype.slice.call(document.querySelectorAll("[data-tab-panel]"));
+  var feedbackMessage = "";
+  var feedbackTimer = null;
 
   function generateId() {
     return String(Date.now()) + "-" + Math.random().toString(36).slice(2, 8);
@@ -135,8 +137,31 @@
     return url.toString();
   }
 
-  function setFeedback(message) {
-    shareFeedback.textContent = message;
+  function updateMessageBubble() {
+    var total = state.items.length;
+    var bubbleText = feedbackMessage || (total === 0 ? "まだ空っぽです" : "");
+
+    messageBubbleText.textContent = bubbleText;
+    messageBubble.hidden = !bubbleText;
+    listStage.classList.toggle("has-message", Boolean(bubbleText));
+  }
+
+  function setFeedback(message, options) {
+    feedbackMessage = message || "";
+    updateMessageBubble();
+
+    if (feedbackTimer !== null) {
+      window.clearTimeout(feedbackTimer);
+      feedbackTimer = null;
+    }
+
+    if (feedbackMessage && (!options || options.persist !== true)) {
+      feedbackTimer = window.setTimeout(function () {
+        feedbackMessage = "";
+        updateMessageBubble();
+        feedbackTimer = null;
+      }, options && typeof options.duration === "number" ? options.duration : 2600);
+    }
   }
 
   function setPressSelectionLock(isLocked) {
@@ -286,32 +311,15 @@
       if (item.id !== id) {
         return item;
       }
-      var nextDone = !item.done;
       return {
         id: item.id,
         name: item.name,
-        done: nextDone,
+        done: !item.done,
         createdAt: item.createdAt,
-        order: nextDone ? getMaxOrder(state.items) + 1 : getMinOrder(state.items) - 1
+        order: item.order
       };
     });
     commit(nextItems);
-  }
-
-  function checkAll() {
-    if (!state.items.length) {
-      return;
-    }
-    var orderSeed = getMaxOrder(state.items) + 1;
-    commit(state.items.map(function (item, index) {
-      return {
-        id: item.id,
-        name: item.name,
-        done: true,
-        createdAt: item.createdAt,
-        order: orderSeed + index
-      };
-    }), { feedback: "すべての項目を完了にしました。" });
   }
 
   function removeItem(id) {
@@ -345,7 +353,9 @@
 
     if (navigator.share) {
       navigator.share(shareData).then(function () {
-        setFeedback("共有シートを開きました。");
+        setFeedback("この共有リンクを送ってください", {
+          duration: 4200
+        });
       }).catch(function (error) {
         if (error && error.name !== "AbortError") {
           fallbackCopy(shareUrl);
@@ -359,7 +369,9 @@
   function fallbackCopy(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () {
-        setFeedback("共有URLをコピーしました。");
+        setFeedback("この共有リンクを送ってください", {
+          duration: 4200
+        });
       }).catch(function () {
         manualCopy(text);
       });
@@ -376,7 +388,9 @@
     tempInput.setSelectionRange(0, tempInput.value.length);
     document.execCommand("copy");
     document.body.removeChild(tempInput);
-    setFeedback("共有URLをコピーしました。");
+    setFeedback("この共有リンクを送ってください", {
+      duration: 4200
+    });
   }
 
   function showDialog(html) {
@@ -645,10 +659,11 @@
       return item.done;
     }).length;
     statusText.textContent = total + "件中 " + completed + "件完了";
-    emptyState.hidden = total !== 0;
+    statusText.classList.toggle("is-all-done", total > 0 && completed === total);
+    listStage.classList.toggle("is-empty", total === 0);
     clearAllButton.disabled = total === 0;
     clearCompletedButton.disabled = completed === 0;
-    checkAllButton.disabled = total === 0 || completed === total;
+    updateMessageBubble();
   }
 
   function restoreFromUrl() {
@@ -691,7 +706,6 @@
       });
     });
 
-    checkAllButton.addEventListener("click", checkAll);
     setupHoldToAction(clearCompletedButton, clearCompleted, {
       hint: "完了済み削除は長押しで実行します。"
     });
