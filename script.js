@@ -139,6 +139,10 @@
     shareFeedback.textContent = message;
   }
 
+  function setPressSelectionLock(isLocked) {
+    document.body.classList.toggle("is-pressing-action", Boolean(isLocked));
+  }
+
   function updateMetaUrl() {
     var ogUrl = document.querySelector('meta[property="og:url"]');
     if (ogUrl) {
@@ -184,22 +188,28 @@
         holdTimer = null;
       }
       clearHoldVisual();
+      setPressSelectionLock(false);
     }
 
     function completeHold() {
       holdTimer = null;
       holdCompleted = true;
       clearHoldVisual();
+      setPressSelectionLock(false);
       action();
     }
 
-    function startHold() {
+    function startHold(event) {
       if (button.disabled || holdTimer !== null) {
         return;
+      }
+      if (event && typeof event.preventDefault === "function") {
+        event.preventDefault();
       }
       holdCompleted = false;
       button.classList.add("is-holding");
       button.style.setProperty("--hold-duration", HOLD_TO_DELETE_MS + "ms");
+      setPressSelectionLock(true);
       holdTimer = window.setTimeout(completeHold, HOLD_TO_DELETE_MS);
     }
 
@@ -207,7 +217,7 @@
       if (event.button !== 0) {
         return;
       }
-      startHold();
+      startHold(event);
     });
     button.addEventListener("pointerup", cancelHold);
     button.addEventListener("pointerleave", cancelHold);
@@ -465,6 +475,7 @@
     }
 
     cleanupDrag();
+    setPressSelectionLock(false);
     shoppingList.insertBefore(dragState.element, dragState.placeholder);
     dragState.placeholder.remove();
 
@@ -526,6 +537,7 @@
         holdTimer = null;
       }
       handle.classList.remove("is-armed");
+      setPressSelectionLock(false);
       pending = null;
     }
 
@@ -533,6 +545,7 @@
       if (event.button !== 0) {
         return;
       }
+      event.preventDefault();
       dragStarted = false;
       pending = {
         pointerId: event.pointerId,
@@ -542,6 +555,7 @@
         handle: handle
       };
       handle.classList.add("is-armed");
+      setPressSelectionLock(true);
       holdTimer = window.setTimeout(function () {
         if (!pending) {
           return;

@@ -36,6 +36,13 @@ body {
   color: var(--text);
 }
 
+body.is-pressing-action,
+body.is-pressing-action * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
 body,
 button,
 input,
@@ -407,6 +414,9 @@ summary:focus-visible {
   padding: 0;
   background: transparent;
   touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .drag-handle-lines {
@@ -459,12 +469,18 @@ summary:focus-visible {
   color: var(--danger);
   font-size: 0.95rem;
   font-weight: 700;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .ghost-button {
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
 }
 
 .icon-button::before,
