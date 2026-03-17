@@ -1,0 +1,161 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>買い物リスト | みっちー</title>
+  <meta name="description" content="みっちーの買い物リスト。">
+  <meta name="theme-color" content="#b79cff">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="買い物リスト">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="買い物リスト | みっちー">
+  <meta property="og:description" content="みっちーの買い物リスト。">
+  <meta property="og:image" content="./ogp.png">
+  <meta property="og:url" content="">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./favicon.png" sizes="any">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <p class="hero-badge" aria-label="キャラクターモチーフ">みっちーのやさしいメモ</p>
+      <h1>買い物リスト</h1>
+      <p class="hero-copy">「今日はこれを忘れずに」を、ふんわり整えるお買いもの相棒。</p>
+    </header>
+
+    <main class="card-stack">
+      <section class="panel input-panel" aria-labelledby="add-item-heading">
+        <div class="panel-heading">
+          <h2 id="add-item-heading">買うものを追加</h2>
+        </div>
+
+        <form id="add-form" class="add-form">
+          <label class="sr-only" for="item-input">買い物項目</label>
+          <input
+            id="item-input"
+            name="item"
+            type="text"
+            inputmode="text"
+            autocomplete="off"
+            maxlength="50"
+            placeholder="例: ヨーグルト"
+          >
+          <button type="submit" class="primary-button">追加</button>
+        </form>
+
+        <details class="quick-add">
+          <summary class="quick-add-summary">
+            <span class="quick-add-summary-title">定番をワンタップ追加</span>
+            <span class="quick-add-summary-icon" aria-hidden="true"></span>
+          </summary>
+
+          <div class="quick-add-body">
+            <div class="quick-tabs" role="tablist" aria-label="定番追加カテゴリ">
+              <button type="button" class="quick-tab-button is-active" id="tab-food" role="tab" aria-selected="true" aria-controls="panel-food" data-tab-target="food">食品</button>
+              <button type="button" class="quick-tab-button" id="tab-daily" role="tab" aria-selected="false" aria-controls="panel-daily" data-tab-target="daily">日用品</button>
+            </div>
+
+            <div id="panel-food" class="quick-tab-panel" role="tabpanel" aria-labelledby="tab-food" data-tab-panel="food">
+              <div class="chip-group">
+                <button type="button" class="chip-button" data-quick-add="牛乳">牛乳</button>
+                <button type="button" class="chip-button" data-quick-add="卵">卵</button>
+                <button type="button" class="chip-button" data-quick-add="米">米</button>
+                <button type="button" class="chip-button" data-quick-add="パン">パン</button>
+                <button type="button" class="chip-button" data-quick-add="パスタ">パスタ</button>
+                <button type="button" class="chip-button" data-quick-add="肉">肉</button>
+                <button type="button" class="chip-button" data-quick-add="魚">魚</button>
+                <button type="button" class="chip-button" data-quick-add="野菜">野菜</button>
+                <button type="button" class="chip-button" data-quick-add="ヨーグルト">ヨーグルト</button>
+              </div>
+            </div>
+
+            <div id="panel-daily" class="quick-tab-panel" role="tabpanel" aria-labelledby="tab-daily" data-tab-panel="daily" hidden>
+              <div class="chip-group">
+                <button type="button" class="chip-button" data-quick-add="ティッシュ">ティッシュ</button>
+                <button type="button" class="chip-button" data-quick-add="トイレットペーパー">トイレット<br>ペーパー</button>
+                <button type="button" class="chip-button" data-quick-add="洗剤">洗剤</button>
+                <button type="button" class="chip-button" data-quick-add="シャンプー">シャンプー</button>
+                <button type="button" class="chip-button" data-quick-add="歯みがき粉">歯みがき粉</button>
+                <button type="button" class="chip-button" data-quick-add="ハンドソープ">ハンド<br>ソープ</button>
+                <button type="button" class="chip-button" data-quick-add="ボディソープ">ボディ<br>ソープ</button>
+                <button type="button" class="chip-button" data-quick-add="柔軟剤">柔軟剤</button>
+                <button type="button" class="chip-button" data-quick-add="ゴミ袋">ゴミ袋</button>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="panel" aria-labelledby="list-heading">
+        <div class="panel-heading">
+          <h2 id="list-heading">リスト</h2>
+          <p id="status-text" aria-live="polite">0件</p>
+        </div>
+
+        <div class="action-single">
+          <button type="button" id="check-all-button" class="ghost-button">すべてチェック</button>
+        </div>
+
+        <div class="action-row action-row-compact">
+          <button type="button" id="clear-completed-button" class="ghost-button">完了済み削除</button>
+          <button type="button" id="clear-all-button" class="ghost-button danger-button">すべて削除</button>
+        </div>
+
+        <p id="share-feedback" class="feedback" aria-live="polite"></p>
+
+        <ul id="shopping-list" class="shopping-list" aria-label="買い物項目一覧"></ul>
+        <div id="empty-state" class="empty-state">
+          <p class="empty-state-title">まだ空っぽです</p>
+          <p>みっちーが「まずは1つ入れてみよう」と待っています。</p>
+        </div>
+
+        <div class="share-block share-block-bottom">
+          <button type="button" id="share-button" class="secondary-button share-main-button">買い物リストを送る</button>
+          <p class="share-note">※専用のリンクを作成し、リストを送ることが出来ます</p>
+        </div>
+
+        <div class="install-option">
+          <button type="button" id="install-button" class="text-option-button">アプリをホーム画面に追加</button>
+        </div>
+
+        <p class="version-note">Ver.1.00 : 2026.03.17 Created</p>
+        <div class="page-footer-divider" aria-hidden="true"></div>
+        <footer class="page-footer">
+          <p>©再生の道／みっちー&amp;こみっちー</p>
+          <p>非公式／Created with AI</p>
+          <p>Created by <a href="https://x.com/kanachi0707" target="_blank" rel="noreferrer">@kanachi0707</a></p>
+        </footer>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="install-dialog" class="install-dialog">
+    <form method="dialog" class="dialog-card">
+      <h2 id="install-dialog-title">ホーム画面に追加</h2>
+      <div id="install-dialog-body" class="dialog-body"></div>
+      <button type="submit" class="primary-button dialog-close">閉じる</button>
+    </form>
+  </dialog>
+
+  <template id="list-item-template">
+    <li class="shopping-item">
+      <button type="button" class="drag-handle" aria-label="左のハンドルを長押しして並べ替え" title="左のハンドルを長押しして並べ替え">
+        <span class="drag-handle-lines" aria-hidden="true"></span>
+      </button>
+      <label class="item-main">
+        <input type="checkbox" class="item-checkbox" aria-label="完了にする">
+        <span class="item-text"></span>
+      </label>
+      <button type="button" class="icon-button delete-button" aria-label="項目を削除">削除</button>
+    </li>
+  </template>
+
+  <script src="./script.js"></script>
+</body>
+</html>
+
+
