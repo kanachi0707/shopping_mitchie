@@ -138,10 +138,7 @@
   function encodeShareData(items) {
     return btoa(encodeURIComponent(JSON.stringify({
       i: items.map(function (item) {
-        return {
-          n: item.name,
-          d: item.done ? 1 : 0
-        };
+        return item.done ? [item.name, 1] : item.name;
       })
     })));
   }
@@ -153,13 +150,29 @@
           return false;
         }
         if (isCompactFormat) {
-          return typeof item.n === "string";
+          return typeof item === "string" || (Array.isArray(item) && typeof item[0] === "string") || typeof item.n === "string";
         }
         return typeof item.name === "string";
       })
       .map(function (item, index) {
-        var name = isCompactFormat ? item.n : item.name;
-        var done = isCompactFormat ? item.d : item.done;
+        var name;
+        var done;
+
+        if (isCompactFormat) {
+          if (typeof item === "string") {
+            name = item;
+            done = 0;
+          } else if (Array.isArray(item)) {
+            name = item[0];
+            done = item[1];
+          } else {
+            name = item.n;
+            done = item.d;
+          }
+        } else {
+          name = item.name;
+          done = item.done;
+        }
 
         return {
           id: generateId() + "-" + index,
