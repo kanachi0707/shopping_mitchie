@@ -12,20 +12,59 @@
 
   var addForm = document.getElementById("add-form");
   var itemInput = document.getElementById("item-input");
+  var listStage = document.getElementById("list-stage");
+  var mitchieButton = document.getElementById("mitchie-button");
   var shoppingList = document.getElementById("shopping-list");
   var statusText = document.getElementById("status-text");
-  var emptyState = document.getElementById("empty-state");
+  var messageBubble = document.getElementById("message-bubble");
+  var messageBubbleText = document.getElementById("message-bubble-text");
   var shareButton = document.getElementById("share-button");
   var installButton = document.getElementById("install-button");
-  var checkAllButton = document.getElementById("check-all-button");
   var clearAllButton = document.getElementById("clear-all-button");
   var clearCompletedButton = document.getElementById("clear-completed-button");
-  var shareFeedback = document.getElementById("share-feedback");
   var installDialog = document.getElementById("install-dialog");
   var installDialogBody = document.getElementById("install-dialog-body");
   var listItemTemplate = document.getElementById("list-item-template");
   var quickTabButtons = Array.prototype.slice.call(document.querySelectorAll("[data-tab-target]"));
   var quickTabPanels = Array.prototype.slice.call(document.querySelectorAll("[data-tab-panel]"));
+  var feedbackMessage = "";
+  var feedbackTimer = null;
+  var lastMitchieMessageIndex = -1;
+  var EMPTY_BUBBLE_MESSAGE = "（まだ空っぽだわ）";
+  var SHARED_LINK_OPEN_MESSAGE = "このリストを見ながらお買い物しましょう";
+  var openedFromSharedLink = false;
+  var commonMitchieTapMessages = [
+    "歩きスマホに気を付けてね",
+    "ご近所さん見かけたらご挨拶してみる？",
+    "お財布持ってきた？",
+    "クーポン持った？",
+    "食品の消費税は変わるのかな～",
+    "マイバッグもった？",
+    "あれ、切らしてたんじゃない？ほら、あれ。",
+    "こないだの選挙、どうだった？",
+    "物価高、なんとかしてほしいよね～",
+    "今夜のこんだて何にする？",
+    "最近、駐車券いらないところも増えてるよね",
+    "ビニール袋も有料になって随分たつよね",
+    "デザートも買っちゃわない？",
+    "いつもは買わないものも試してみる？"
+  ];
+  var defaultMitchieTapMessages = [
+    "おつかい、まかせたいものある？",
+    "買い忘れ、ないか見てみよう",
+    "左の線を長押しすると並べ替えできるよ",
+    "共有リンクでお願いしやすくなるよ",
+    "買い物頼みたいときは「買い物リストを送る」が便利！",
+    "「定番をワンタップ追加」が便利よね～",
+    "「アプリをホーム画面に追加」でスマホに登録する？",
+    "帰ったら「みっちーめもぱず」やってみない？"
+  ];
+  var sharedLinkMitchieTapMessages = [
+    "ひとつずつ見ながらで大丈夫",
+    "買えたものから印をつけていこう",
+    "迷ったらこのリストを見れば大丈夫",
+    "ゆっくり確認しながら進めよう"
+  ];
 
   function generateId() {
     return String(Date.now()) + "-" + Math.random().toString(36).slice(2, 8);
@@ -135,8 +174,35 @@
     return url.toString();
   }
 
-  function setFeedback(message) {
-    shareFeedback.textContent = message;
+  function updateMessageBubble() {
+    var total = state.items.length;
+    var bubbleText = feedbackMessage || (total === 0 ? EMPTY_BUBBLE_MESSAGE : "");
+
+    messageBubbleText.textContent = bubbleText;
+    messageBubble.hidden = !bubbleText;
+    listStage.classList.toggle("has-message", Boolean(bubbleText));
+  }
+
+  function setFeedback(message, options) {
+    feedbackMessage = message || "";
+    updateMessageBubble();
+
+    if (feedbackTimer !== null) {
+      window.clearTimeout(feedbackTimer);
+      feedbackTimer = null;
+    }
+
+    if (feedbackMessage && (!options || options.persist !== true)) {
+      feedbackTimer = window.setTimeout(function () {
+        feedbackMessage = "";
+        updateMessageBubble();
+        feedbackTimer = null;
+      }, options && typeof options.duration === "number" ? options.duration : 2600);
+    }
+  }
+
+  function setPressSelectionLock(isLocked) {
+    document.body.classList.toggle("is-pressing-action", Boolean(isLocked));
   }
 
   function updateMetaUrl() {
@@ -156,6 +222,29 @@
 
     quickTabPanels.forEach(function (panel) {
       panel.hidden = panel.getAttribute("data-tab-panel") !== tabName;
+    });
+  }
+
+  function getNextMitchieMessage() {
+    var modeMessages = openedFromSharedLink ? sharedLinkMitchieTapMessages : defaultMitchieTapMessages;
+    var messagePool = commonMitchieTapMessages.concat(modeMessages);
+    var nextIndex = Math.floor(Math.random() * messagePool.length);
+
+    if (messagePool.length > 1 && nextIndex === lastMitchieMessageIndex) {
+      nextIndex = (nextIndex + 1) % messagePool.length;
+    }
+
+    lastMitchieMessageIndex = nextIndex;
+    return messagePool[nextIndex];
+  }
+
+  function handleMitchieTap() {
+    if (feedbackMessage) {
+      return;
+    }
+
+    setFeedback(getNextMitchieMessage(), {
+      duration: 2800
     });
   }
 
@@ -184,22 +273,28 @@
         holdTimer = null;
       }
       clearHoldVisual();
+      setPressSelectionLock(false);
     }
 
     function completeHold() {
       holdTimer = null;
       holdCompleted = true;
       clearHoldVisual();
+      setPressSelectionLock(false);
       action();
     }
 
-    function startHold() {
+    function startHold(event) {
       if (button.disabled || holdTimer !== null) {
         return;
+      }
+      if (event && typeof event.preventDefault === "function") {
+        event.preventDefault();
       }
       holdCompleted = false;
       button.classList.add("is-holding");
       button.style.setProperty("--hold-duration", HOLD_TO_DELETE_MS + "ms");
+      setPressSelectionLock(true);
       holdTimer = window.setTimeout(completeHold, HOLD_TO_DELETE_MS);
     }
 
@@ -207,7 +302,7 @@
       if (event.button !== 0) {
         return;
       }
-      startHold();
+      startHold(event);
     });
     button.addEventListener("pointerup", cancelHold);
     button.addEventListener("pointerleave", cancelHold);
@@ -236,11 +331,24 @@
     });
   }
 
-  function addItem(name) {
+  function pulseQuickAddButton(button) {
+    button.classList.remove("is-added");
+    void button.offsetWidth;
+    button.classList.add("is-added");
+    window.setTimeout(function () {
+      button.classList.remove("is-added");
+    }, 520);
+  }
+
+  function addItem(name, options) {
     var normalized = normalizeItemName(name);
+    var shouldFocusInput = !options || options.focusInput !== false;
+
     if (!normalized) {
       setFeedback("項目名を入力してください。");
-      itemInput.focus();
+      if (shouldFocusInput) {
+        itemInput.focus();
+      }
       return;
     }
 
@@ -253,7 +361,9 @@
     });
     commit(nextItems, { feedback: "「" + normalized + "」を追加しました。" });
     itemInput.value = "";
-    itemInput.focus();
+    if (shouldFocusInput) {
+      itemInput.focus();
+    }
   }
 
   function toggleItem(id) {
@@ -261,32 +371,15 @@
       if (item.id !== id) {
         return item;
       }
-      var nextDone = !item.done;
       return {
         id: item.id,
         name: item.name,
-        done: nextDone,
+        done: !item.done,
         createdAt: item.createdAt,
-        order: nextDone ? getMaxOrder(state.items) + 1 : getMinOrder(state.items) - 1
+        order: item.order
       };
     });
     commit(nextItems);
-  }
-
-  function checkAll() {
-    if (!state.items.length) {
-      return;
-    }
-    var orderSeed = getMaxOrder(state.items) + 1;
-    commit(state.items.map(function (item, index) {
-      return {
-        id: item.id,
-        name: item.name,
-        done: true,
-        createdAt: item.createdAt,
-        order: orderSeed + index
-      };
-    }), { feedback: "すべての項目を完了にしました。" });
   }
 
   function removeItem(id) {
@@ -320,7 +413,9 @@
 
     if (navigator.share) {
       navigator.share(shareData).then(function () {
-        setFeedback("共有シートを開きました。");
+        setFeedback("この共有リンクを送ってください", {
+          duration: 4200
+        });
       }).catch(function (error) {
         if (error && error.name !== "AbortError") {
           fallbackCopy(shareUrl);
@@ -334,7 +429,9 @@
   function fallbackCopy(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(function () {
-        setFeedback("共有URLをコピーしました。");
+        setFeedback("この共有リンクを送ってください", {
+          duration: 4200
+        });
       }).catch(function () {
         manualCopy(text);
       });
@@ -351,7 +448,9 @@
     tempInput.setSelectionRange(0, tempInput.value.length);
     document.execCommand("copy");
     document.body.removeChild(tempInput);
-    setFeedback("共有URLをコピーしました。");
+    setFeedback("この共有リンクを送ってください", {
+      duration: 4200
+    });
   }
 
   function showDialog(html) {
@@ -384,7 +483,7 @@
       return;
     }
     if (isIos()) {
-      showDialog("<p>iPhone / iPad では次の順で追加できます。</p><ol><li>Safari の共有ボタンをタップ</li><li>「ホーム画面に追加」を選ぶ</li></ol>");
+      showDialog("<p>iPhone / iPad では次の順で追加できます。</p><ol><li>ブラウザ(Safari/Chromeなど)の共有ボタンをタップ</li><li>「ホーム画面に追加」を選ぶ（ない場合は「もっと見る」を押してみて）</li></ol>");
       return;
     }
     showDialog("<p>このブラウザでは直接インストールを出せませんでした。</p><p>ブラウザのメニューから「ホーム画面に追加」や「アプリをインストール」を探してみてください。</p>");
@@ -465,6 +564,7 @@
     }
 
     cleanupDrag();
+    setPressSelectionLock(false);
     shoppingList.insertBefore(dragState.element, dragState.placeholder);
     dragState.placeholder.remove();
 
@@ -526,6 +626,7 @@
         holdTimer = null;
       }
       handle.classList.remove("is-armed");
+      setPressSelectionLock(false);
       pending = null;
     }
 
@@ -533,6 +634,7 @@
       if (event.button !== 0) {
         return;
       }
+      event.preventDefault();
       dragStarted = false;
       pending = {
         pointerId: event.pointerId,
@@ -542,6 +644,7 @@
         handle: handle
       };
       handle.classList.add("is-armed");
+      setPressSelectionLock(true);
       holdTimer = window.setTimeout(function () {
         if (!pending) {
           return;
@@ -616,25 +719,29 @@
       return item.done;
     }).length;
     statusText.textContent = total + "件中 " + completed + "件完了";
-    emptyState.hidden = total !== 0;
+    statusText.classList.toggle("is-all-done", total > 0 && completed === total);
+    listStage.classList.toggle("is-empty", total === 0);
     clearAllButton.disabled = total === 0;
     clearCompletedButton.disabled = completed === 0;
-    checkAllButton.disabled = total === 0 || completed === total;
+    updateMessageBubble();
   }
 
   function restoreFromUrl() {
     var params = new URLSearchParams(window.location.search);
     var data = params.get("data");
     if (!data) {
+      openedFromSharedLink = false;
       return false;
     }
 
     try {
+      openedFromSharedLink = true;
       state.items = decodeShareData(data);
       saveToStorage();
-      setFeedback("共有URLからリストを復元しました。");
+      setFeedback(SHARED_LINK_OPEN_MESSAGE);
       return true;
     } catch (error) {
+      openedFromSharedLink = false;
       console.warn("共有URLの復元に失敗しました。", error);
       setFeedback("共有URLの読み込みに失敗しました。");
       return false;
@@ -649,7 +756,10 @@
 
     document.querySelectorAll("[data-quick-add]").forEach(function (button) {
       button.addEventListener("click", function () {
-        addItem(button.getAttribute("data-quick-add") || "");
+        addItem(button.getAttribute("data-quick-add") || "", {
+          focusInput: false
+        });
+        pulseQuickAddButton(button);
       });
     });
 
@@ -659,7 +769,6 @@
       });
     });
 
-    checkAllButton.addEventListener("click", checkAll);
     setupHoldToAction(clearCompletedButton, clearCompleted, {
       hint: "完了済み削除は長押しで実行します。"
     });
@@ -668,6 +777,7 @@
     });
     shareButton.addEventListener("click", handleShare);
     installButton.addEventListener("click", handleInstall);
+    mitchieButton.addEventListener("click", handleMitchieTap);
 
     window.addEventListener("beforeinstallprompt", function (event) {
       event.preventDefault();
