@@ -246,11 +246,24 @@
     });
   }
 
-  function addItem(name) {
+  function pulseQuickAddButton(button) {
+    button.classList.remove("is-added");
+    void button.offsetWidth;
+    button.classList.add("is-added");
+    window.setTimeout(function () {
+      button.classList.remove("is-added");
+    }, 520);
+  }
+
+  function addItem(name, options) {
     var normalized = normalizeItemName(name);
+    var shouldFocusInput = !options || options.focusInput !== false;
+
     if (!normalized) {
       setFeedback("項目名を入力してください。");
-      itemInput.focus();
+      if (shouldFocusInput) {
+        itemInput.focus();
+      }
       return;
     }
 
@@ -263,7 +276,9 @@
     });
     commit(nextItems, { feedback: "「" + normalized + "」を追加しました。" });
     itemInput.value = "";
-    itemInput.focus();
+    if (shouldFocusInput) {
+      itemInput.focus();
+    }
   }
 
   function toggleItem(id) {
@@ -663,7 +678,10 @@
 
     document.querySelectorAll("[data-quick-add]").forEach(function (button) {
       button.addEventListener("click", function () {
-        addItem(button.getAttribute("data-quick-add") || "");
+        addItem(button.getAttribute("data-quick-add") || "", {
+          focusInput: false
+        });
+        pulseQuickAddButton(button);
       });
     });
 
