@@ -137,27 +137,47 @@
 
   function encodeShareData(items) {
     return btoa(encodeURIComponent(JSON.stringify({
-      items: items.map(function (item) {
-        return { name: item.name, done: item.done };
+      i: items.map(function (item) {
+        return item.done ? [item.name, 1] : item.name;
       })
     })));
   }
 
-  function decodeShareData(encoded) {
-    var parsed = JSON.parse(decodeURIComponent(atob(encoded)));
-    if (!parsed || !Array.isArray(parsed.items)) {
-      throw new Error("共有データの形式が不正です。");
-    }
-
-    return parsed.items
+  function normalizeSharedItems(items, isCompactFormat) {
+    return items
       .filter(function (item) {
-        return item && typeof item.name === "string";
+        if (!item) {
+          return false;
+        }
+        if (isCompactFormat) {
+          return typeof item === "string" || (Array.isArray(item) && typeof item[0] === "string") || typeof item.n === "string";
+        }
+        return typeof item.name === "string";
       })
       .map(function (item, index) {
+        var name;
+        var done;
+
+        if (isCompactFormat) {
+          if (typeof item === "string") {
+            name = item;
+            done = 0;
+          } else if (Array.isArray(item)) {
+            name = item[0];
+            done = item[1];
+          } else {
+            name = item.n;
+            done = item.d;
+          }
+        } else {
+          name = item.name;
+          done = item.done;
+        }
+
         return {
           id: generateId() + "-" + index,
-          name: normalizeItemName(item.name),
-          done: Boolean(item.done),
+          name: normalizeItemName(name),
+          done: done === 1 || done === true,
           createdAt: index,
           order: index
         };
@@ -165,6 +185,18 @@
       .filter(function (item) {
         return item.name.length > 0;
       });
+  }
+
+  function decodeShareData(encoded) {
+    var parsed = JSON.parse(decodeURIComponent(atob(encoded)));
+    var isCompactFormat = parsed && Array.isArray(parsed.i);
+    var isLegacyFormat = parsed && Array.isArray(parsed.items);
+
+    if (!isCompactFormat && !isLegacyFormat) {
+      throw new Error("共有データの形式が不正です。");
+    }
+
+    return normalizeSharedItems(isCompactFormat ? parsed.i : parsed.items, isCompactFormat);
   }
 
   function getShareUrl() {
