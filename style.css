@@ -93,7 +93,7 @@ textarea {
 }
 
 .hero {
-  padding: 20px 8px 12px;
+  padding: 4px 0 10px;
 }
 
 .hero-badge {
@@ -120,6 +120,16 @@ textarea {
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.6;
+}
+
+.hero-banner {
+  display: block;
+}
+
+.hero-banner-image {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .card-stack {
@@ -436,30 +446,25 @@ summary:focus-visible {
 
 .list-stage {
   position: relative;
-  min-height: 208px;
+  min-height: 286px;
   margin-top: 14px;
   padding-bottom: 8px;
 }
 
-.list-stage.is-empty {
-  min-height: 286px;
-}
-
-.list-stage.has-message {
-  min-height: 252px;
-}
-
 .mitchie-character {
   position: absolute;
-  right: 6px;
+  right: 34px;
   top: 64px;
-  z-index: 0;
+  z-index: 2;
+  padding: 0;
+  border: none;
   width: 210px;
   opacity: 0.12;
   transform: scale(1);
   transform-origin: bottom right;
   transition: opacity 0.24s ease, transform 0.28s ease, right 0.28s ease, top 0.28s ease, width 0.28s ease;
-  pointer-events: none;
+  pointer-events: auto;
+  background: transparent;
 }
 
 .list-stage.is-empty .mitchie-character {
@@ -468,13 +473,18 @@ summary:focus-visible {
 }
 
 .list-stage.has-message:not(.is-empty) .mitchie-character {
-  opacity: 0.22;
+  opacity: 0.7;
 }
 
 .mitchie-character-image {
   display: block;
   width: 100%;
   height: auto;
+}
+
+.mitchie-character:focus-visible {
+  outline: 3px solid rgba(183, 156, 255, 0.36);
+  outline-offset: 4px;
 }
 
 .shopping-list {
@@ -594,6 +604,7 @@ summary:focus-visible {
   word-break: break-word;
   line-height: 1.28;
   font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .icon-button {
@@ -678,7 +689,7 @@ summary:focus-visible {
   position: absolute;
   top: -12px;
   right: 10px;
-  z-index: 2;
+  z-index: 3;
   max-width: min(220px, calc(100% - 126px));
   padding: 12px 14px;
   border: 1px solid rgba(221, 211, 243, 0.92);

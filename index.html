@@ -3,28 +3,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>買い物リスト | みっちー</title>
-  <meta name="description" content="みっちーの買い物リスト。">
+  <title>お買い物リスト - みっちーと一緒</title>
+  <meta name="description" content="みっちーと一緒に使える、シンプルなお買い物リストアプリ。">
   <meta name="theme-color" content="#b79cff">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="買い物リスト">
+  <meta name="apple-mobile-web-app-title" content="買い物みっちー">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="買い物リスト | みっちー">
-  <meta property="og:description" content="みっちーの買い物リスト。">
-  <meta property="og:image" content="./ogp.png">
-  <meta property="og:url" content="">
+  <meta property="og:title" content="お買い物リスト - みっちーと一緒">
+  <meta property="og:description" content="みっちーと一緒に使える、シンプルなお買い物リストアプリ。">
+  <meta property="og:url" content="https://kanachi0707.github.io/shopping_mitchie/">
+  <meta property="og:image" content="https://kanachi0707.github.io/shopping_mitchie/image/OGP_shoppinglist.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="お買い物リスト - みっちーと一緒">
+  <meta name="twitter:description" content="みっちーと一緒に使える、シンプルなお買い物リストアプリ。">
+  <meta name="twitter:image" content="https://kanachi0707.github.io/shopping_mitchie/image/OGP_shoppinglist.png">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./favicon.png" sizes="any">
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="icon" href="./image/fabicon.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="./image/icon_180.png">
   <link rel="stylesheet" href="./style.css">
 </head>
-<body>
+  <body>
   <div class="app-shell">
-    <header class="hero">
-      <p class="hero-badge" aria-label="キャラクターモチーフ">みっちーのやさしいメモ</p>
-      <h1>買い物リスト</h1>
-      <p class="hero-copy">「今日はこれを忘れずに」を、ふんわり整えるお買いもの相棒。</p>
+    <header class="hero hero-banner">
+      <h1 class="sr-only">お買い物リスト - みっちーと一緒</h1>
+      <img src="./image/banner.png" alt="お買い物リスト みっちーと一緒" class="hero-banner-image">
     </header>
 
     <main class="card-stack">
@@ -97,12 +100,12 @@
         </div>
 
         <div id="list-stage" class="list-stage">
-          <div class="mitchie-character" aria-hidden="true">
+          <button type="button" id="mitchie-button" class="mitchie-character" aria-label="みっちーのひとことを見る">
             <img src="./image/bagmitchie.png" alt="" class="mitchie-character-image">
-          </div>
+          </button>
           <ul id="shopping-list" class="shopping-list" aria-label="買い物項目一覧"></ul>
           <div id="message-bubble" class="empty-state" aria-live="polite">
-            <p id="message-bubble-text" class="empty-state-title">まだ空っぽです</p>
+            <p id="message-bubble-text" class="empty-state-title">（まだ空っぽだわ）</p>
           </div>
         </div>
 
@@ -120,10 +123,10 @@
           <button type="button" id="install-button" class="text-option-button">アプリをホーム画面に追加</button>
         </div>
 
-        <p class="version-note">Ver.1.00 : 2026.03.17 Created</p>
+        <p class="version-note">Ver.1.01 : 2026.03.17 Updated OGP/X対応</p>
         <div class="page-footer-divider" aria-hidden="true"></div>
         <footer class="page-footer">
-          <p>©再生の道／みっちー&amp;こみっちー</p>
+          <p>©再生の道／みっちー</p>
           <p>非公式／Created with AI</p>
           <p>Created by <a href="https://x.com/kanachi0707" target="_blank" rel="noreferrer">@kanachi0707</a></p>
         </footer>

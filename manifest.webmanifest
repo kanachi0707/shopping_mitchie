@@ -1,7 +1,7 @@
 ﻿{
-  "name": "買い物リスト | みっちー",
-  "short_name": "買い物リスト",
-  "description": "みっちーの買い物リスト。",
+  "name": "お買い物リスト - みっちーと一緒",
+  "short_name": "買い物みっちー",
+  "description": "みっちーと一緒に使える、シンプルなお買い物リストアプリ。",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -9,12 +9,12 @@
   "theme_color": "#b79cff",
   "icons": [
     {
-      "src": "./icon-192.png",
+      "src": "./image/icon_192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "./icon-512.png",
+      "src": "./image/icon_512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

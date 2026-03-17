@@ -13,6 +13,7 @@
   var addForm = document.getElementById("add-form");
   var itemInput = document.getElementById("item-input");
   var listStage = document.getElementById("list-stage");
+  var mitchieButton = document.getElementById("mitchie-button");
   var shoppingList = document.getElementById("shopping-list");
   var statusText = document.getElementById("status-text");
   var messageBubble = document.getElementById("message-bubble");
@@ -28,6 +29,42 @@
   var quickTabPanels = Array.prototype.slice.call(document.querySelectorAll("[data-tab-panel]"));
   var feedbackMessage = "";
   var feedbackTimer = null;
+  var lastMitchieMessageIndex = -1;
+  var EMPTY_BUBBLE_MESSAGE = "（まだ空っぽだわ）";
+  var SHARED_LINK_OPEN_MESSAGE = "このリストを見ながらお買い物しましょう";
+  var openedFromSharedLink = false;
+  var commonMitchieTapMessages = [
+    "歩きスマホに気を付けてね",
+    "ご近所さん見かけたらご挨拶してみる？",
+    "お財布持ってきた？",
+    "クーポン持った？",
+    "食品の消費税は変わるのかな～",
+    "マイバッグもった？",
+    "あれ、切らしてたんじゃない？ほら、あれ。",
+    "こないだの選挙、どうだった？",
+    "議員さんに物価高なんとかしてもらいたいわね～",
+    "今夜のこんだて何にする？",
+    "最近、駐車券いらないところも増えてるよね",
+    "ビニール袋も有料になって随分たつよね",
+    "デザートも買っちゃわない？",
+    "いつもは買わないものも試してみる？"
+  ];
+  var defaultMitchieTapMessages = [
+    "おつかい、まかせたいものある？",
+    "買い忘れ、ないか見てみよう",
+    "左の線を長押しすると並べ替えできるよ",
+    "共有リンクでお願いしやすくなるよ",
+    "買い物頼みたいときは「買い物リストを送る」が便利！",
+    "「定番をワンタップ追加」が便利よね～",
+    "「アプリをホーム画面に追加」でスマホに登録する？",
+    "帰ったら「みっちーめもぱず」やってみない？"
+  ];
+  var sharedLinkMitchieTapMessages = [
+    "ひとつずつ見ながらで大丈夫",
+    "買えたものから印をつけていこう",
+    "迷ったらこのリストを見れば大丈夫",
+    "ゆっくり確認しながら進めよう"
+  ];
 
   function generateId() {
     return String(Date.now()) + "-" + Math.random().toString(36).slice(2, 8);
@@ -139,7 +176,7 @@
 
   function updateMessageBubble() {
     var total = state.items.length;
-    var bubbleText = feedbackMessage || (total === 0 ? "まだ空っぽです" : "");
+    var bubbleText = feedbackMessage || (total === 0 ? EMPTY_BUBBLE_MESSAGE : "");
 
     messageBubbleText.textContent = bubbleText;
     messageBubble.hidden = !bubbleText;
@@ -185,6 +222,29 @@
 
     quickTabPanels.forEach(function (panel) {
       panel.hidden = panel.getAttribute("data-tab-panel") !== tabName;
+    });
+  }
+
+  function getNextMitchieMessage() {
+    var modeMessages = openedFromSharedLink ? sharedLinkMitchieTapMessages : defaultMitchieTapMessages;
+    var messagePool = commonMitchieTapMessages.concat(modeMessages);
+    var nextIndex = Math.floor(Math.random() * messagePool.length);
+
+    if (messagePool.length > 1 && nextIndex === lastMitchieMessageIndex) {
+      nextIndex = (nextIndex + 1) % messagePool.length;
+    }
+
+    lastMitchieMessageIndex = nextIndex;
+    return messagePool[nextIndex];
+  }
+
+  function handleMitchieTap() {
+    if (feedbackMessage) {
+      return;
+    }
+
+    setFeedback(getNextMitchieMessage(), {
+      duration: 2800
     });
   }
 
@@ -423,7 +483,7 @@
       return;
     }
     if (isIos()) {
-      showDialog("<p>iPhone / iPad では次の順で追加できます。</p><ol><li>Safari の共有ボタンをタップ</li><li>「ホーム画面に追加」を選ぶ</li></ol>");
+      showDialog("<p>iPhone / iPad では次の順で追加できます。</p><ol><li>ブラウザ(Safari/Chromeなど)の共有ボタンをタップ</li><li>「ホーム画面に追加」を選ぶ（ない場合は「もっと見る」を押してみて）</li></ol>");
       return;
     }
     showDialog("<p>このブラウザでは直接インストールを出せませんでした。</p><p>ブラウザのメニューから「ホーム画面に追加」や「アプリをインストール」を探してみてください。</p>");
@@ -670,15 +730,18 @@
     var params = new URLSearchParams(window.location.search);
     var data = params.get("data");
     if (!data) {
+      openedFromSharedLink = false;
       return false;
     }
 
     try {
+      openedFromSharedLink = true;
       state.items = decodeShareData(data);
       saveToStorage();
-      setFeedback("共有URLからリストを復元しました。");
+      setFeedback(SHARED_LINK_OPEN_MESSAGE);
       return true;
     } catch (error) {
+      openedFromSharedLink = false;
       console.warn("共有URLの復元に失敗しました。", error);
       setFeedback("共有URLの読み込みに失敗しました。");
       return false;
@@ -714,6 +777,7 @@
     });
     shareButton.addEventListener("click", handleShare);
     installButton.addEventListener("click", handleInstall);
+    mitchieButton.addEventListener("click", handleMitchieTap);
 
     window.addEventListener("beforeinstallprompt", function (event) {
       event.preventDefault();
