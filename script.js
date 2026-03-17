@@ -394,7 +394,7 @@
     commit(nextItems, { feedback: "「" + normalized + "」を追加しました。" });
     itemInput.value = "";
     if (shouldFocusInput) {
-      itemInput.focus();
+      itemInput.blur();
     }
   }
 
