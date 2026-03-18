@@ -316,7 +316,7 @@
         return;
       }
       input.focus();
-      input.select();
+      input.setSelectionRange(input.value.length, input.value.length);
     });
   }
 
