@@ -303,6 +303,46 @@
     editModeButton.setAttribute("title", label);
   }
 
+  function placeCaretAtEnd(input) {
+    if (!input) {
+      return;
+    }
+    input.focus();
+    input.setSelectionRange(input.value.length, input.value.length);
+  }
+
+  function findListItemElement(itemId) {
+    return shoppingList.querySelector('.shopping-item[data-id="' + itemId + '"]');
+  }
+
+  function applyItemEditState(listItem, itemId, isEditing, itemName) {
+    if (!listItem) {
+      return null;
+    }
+
+    var textButton = listItem.querySelector(".item-text-button");
+    var editForm = listItem.querySelector(".item-edit-form");
+    var editInput = listItem.querySelector(".item-edit-input");
+
+    if (!textButton || !editForm || !editInput) {
+      return null;
+    }
+
+    textButton.hidden = isEditing;
+    editForm.hidden = !isEditing;
+
+    if (typeof itemName === "string") {
+      var text = listItem.querySelector(".item-text");
+      if (text) {
+        text.textContent = itemName;
+      }
+      editInput.value = itemName;
+    }
+
+    editInput.setAttribute("data-item-id", itemId);
+    return editInput;
+  }
+
   function focusPendingEditInput() {
     var itemId = pendingEditFocusId;
     if (!itemId) {
@@ -315,8 +355,7 @@
       if (!input) {
         return;
       }
-      input.focus();
-      input.setSelectionRange(input.value.length, input.value.length);
+      placeCaretAtEnd(input);
     });
   }
 
@@ -334,7 +373,25 @@
       return;
     }
 
+    var currentEditingId = editingItemId;
+    if (currentEditingId && currentEditingId !== itemId) {
+      var currentListItem = findListItemElement(currentEditingId);
+      var currentInput = currentListItem ? currentListItem.querySelector(".item-edit-input") : null;
+      if (currentInput) {
+        currentInput.blur();
+      }
+    }
+
     editingItemId = itemId;
+    var item = findItemById(itemId);
+    var listItem = findListItemElement(itemId);
+    var editInput = applyItemEditState(listItem, itemId, true, item ? item.name : "");
+
+    if (editInput) {
+      placeCaretAtEnd(editInput);
+      return;
+    }
+
     pendingEditFocusId = itemId;
     render();
   }
@@ -344,8 +401,17 @@
       return;
     }
 
+    var currentItemId = editingItemId;
+    var currentItem = findItemById(currentItemId);
+    var listItem = findListItemElement(currentItemId);
+
     editingItemId = null;
     pendingEditFocusId = null;
+    if (listItem && currentItem) {
+      applyItemEditState(listItem, currentItemId, false, currentItem.name);
+      return;
+    }
+
     render();
   }
 
