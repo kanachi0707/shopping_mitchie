@@ -16,6 +16,7 @@
   var mitchieButton = document.getElementById("mitchie-button");
   var shoppingList = document.getElementById("shopping-list");
   var statusText = document.getElementById("status-text");
+  var editModeButton = document.getElementById("edit-mode-button");
   var messageBubble = document.getElementById("message-bubble");
   var messageBubbleText = document.getElementById("message-bubble-text");
   var shareButton = document.getElementById("share-button");
@@ -30,11 +31,15 @@
   var feedbackMessage = "";
   var feedbackTimer = null;
   var lastMitchieMessageIndex = -1;
+  var isEditMode = false;
+  var editingItemId = null;
+  var pendingEditFocusId = null;
   var EMPTY_BUBBLE_MESSAGE = "（まだ空っぽだわ）";
   var SHARED_LINK_OPEN_MESSAGE = "このリストを見ながらお買い物しましょう";
   var openedFromSharedLink = false;
   var commonMitchieTapMessages = [
     "歩きスマホに気を付けてね",
+    "えんぴつマークを押すと追加したものを編集できるよ",
     "ご近所さん見かけたらご挨拶してみる？",
     "お財布持ってきた？",
     "クーポン持った？",
@@ -271,6 +276,10 @@
   }
 
   function handleMitchieTap() {
+    if (isEditMode) {
+      return;
+    }
+
     if (feedbackMessage) {
       return;
     }
@@ -280,8 +289,113 @@
     });
   }
 
+  function findItemById(itemId) {
+    return state.items.find(function (item) {
+      return item.id === itemId;
+    }) || null;
+  }
+
+  function updateEditModeButton() {
+    var label = isEditMode ? "商品名の編集モードをOFFにする" : "商品名の編集モードをONにする";
+    editModeButton.classList.toggle("is-active", isEditMode);
+    editModeButton.setAttribute("aria-pressed", String(isEditMode));
+    editModeButton.setAttribute("aria-label", label);
+    editModeButton.setAttribute("title", label);
+  }
+
+  function focusPendingEditInput() {
+    var itemId = pendingEditFocusId;
+    if (!itemId) {
+      return;
+    }
+
+    pendingEditFocusId = null;
+    window.requestAnimationFrame(function () {
+      var input = shoppingList.querySelector('.item-edit-input[data-item-id="' + itemId + '"]');
+      if (!input) {
+        return;
+      }
+      input.focus();
+      input.select();
+    });
+  }
+
+  function setEditMode(nextValue) {
+    isEditMode = Boolean(nextValue);
+    if (!isEditMode) {
+      editingItemId = null;
+      pendingEditFocusId = null;
+    }
+    render();
+  }
+
+  function beginItemEdit(itemId) {
+    if (!isEditMode || !findItemById(itemId)) {
+      return;
+    }
+
+    editingItemId = itemId;
+    pendingEditFocusId = itemId;
+    render();
+  }
+
+  function cancelItemEdit() {
+    if (!editingItemId) {
+      return;
+    }
+
+    editingItemId = null;
+    pendingEditFocusId = null;
+    render();
+  }
+
+  function saveItemEdit(itemId, nextValue) {
+    var currentItem = findItemById(itemId);
+    var normalized = normalizeItemName(nextValue);
+
+    if (!currentItem) {
+      editingItemId = null;
+      render();
+      return;
+    }
+
+    if (!normalized) {
+      editingItemId = itemId;
+      pendingEditFocusId = itemId;
+      render();
+      setFeedback("商品名を入力してください。");
+      return;
+    }
+
+    editingItemId = null;
+    pendingEditFocusId = null;
+
+    if (normalized === currentItem.name) {
+      render();
+      return;
+    }
+
+    commit(state.items.map(function (item) {
+      if (item.id !== itemId) {
+        return item;
+      }
+
+      return {
+        id: item.id,
+        name: normalized,
+        done: item.done,
+        createdAt: item.createdAt,
+        order: item.order
+      };
+    }));
+  }
+
   function commit(items, options) {
     state.items = items;
+    if (editingItemId && !findItemById(editingItemId)) {
+      editingItemId = null;
+      pendingEditFocusId = null;
+    }
     saveToStorage();
     render();
     if (options && options.feedback) {
@@ -718,13 +832,29 @@
       var listItem = fragment.querySelector(".shopping-item");
       var handle = fragment.querySelector(".drag-handle");
       var checkbox = fragment.querySelector(".item-checkbox");
+      var textButton = fragment.querySelector(".item-text-button");
       var text = fragment.querySelector(".item-text");
+      var editForm = fragment.querySelector(".item-edit-form");
+      var editLabel = fragment.querySelector(".item-edit-label");
+      var editInput = fragment.querySelector(".item-edit-input");
       var deleteButton = fragment.querySelector(".delete-button");
+      var editInputId = "item-edit-" + item.id;
+      var isEditing = isEditMode && editingItemId === item.id;
 
       listItem.dataset.id = item.id;
       checkbox.checked = item.done;
       checkbox.setAttribute("aria-label", item.done ? "未完了に戻す" : "完了にする");
       text.textContent = item.name;
+      textButton.hidden = isEditing;
+      textButton.tabIndex = isEditMode ? 0 : -1;
+      textButton.setAttribute("aria-disabled", String(!isEditMode));
+      textButton.setAttribute("aria-label", isEditMode ? item.name + " を編集" : item.name);
+      textButton.setAttribute("title", isEditMode ? "タップして編集" : "");
+      editForm.hidden = !isEditing;
+      editLabel.setAttribute("for", editInputId);
+      editInput.id = editInputId;
+      editInput.value = item.name;
+      editInput.setAttribute("data-item-id", item.id);
       deleteButton.setAttribute("aria-label", item.name + " を削除");
       deleteButton.setAttribute("title", "長押しで削除");
 
@@ -735,6 +865,42 @@
       checkbox.addEventListener("change", function () {
         toggleItem(item.id);
       });
+      textButton.addEventListener("click", function () {
+        beginItemEdit(item.id);
+      });
+
+      if (isEditing) {
+        var editHandled = false;
+
+        function finishEdit(mode) {
+          if (editHandled) {
+            return;
+          }
+          editHandled = true;
+          if (mode === "cancel") {
+            cancelItemEdit();
+            return;
+          }
+          saveItemEdit(item.id, editInput.value);
+        }
+
+        editForm.addEventListener("submit", function (event) {
+          event.preventDefault();
+          finishEdit("save");
+        });
+
+        editInput.addEventListener("keydown", function (event) {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            finishEdit("cancel");
+          }
+        });
+
+        editInput.addEventListener("blur", function () {
+          finishEdit("save");
+        });
+      }
+
       setupHoldToAction(deleteButton, function () {
         removeItem(item.id);
       }, {
@@ -752,9 +918,12 @@
     statusText.textContent = total + "件中 " + completed + "件完了";
     statusText.classList.toggle("is-all-done", total > 0 && completed === total);
     listStage.classList.toggle("is-empty", total === 0);
+    listStage.classList.toggle("is-edit-mode", isEditMode);
     clearAllButton.disabled = total === 0;
     clearCompletedButton.disabled = completed === 0;
+    updateEditModeButton();
     updateMessageBubble();
+    focusPendingEditInput();
   }
 
   function restoreFromUrl() {
@@ -809,6 +978,9 @@
     shareButton.addEventListener("click", handleShare);
     installButton.addEventListener("click", handleInstall);
     mitchieButton.addEventListener("click", handleMitchieTap);
+    editModeButton.addEventListener("click", function () {
+      setEditMode(!isEditMode);
+    });
 
     window.addEventListener("beforeinstallprompt", function (event) {
       event.preventDefault();

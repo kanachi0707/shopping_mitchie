@@ -94,7 +94,12 @@
       <section class="panel" aria-labelledby="list-heading">
         <div class="list-panel-heading">
           <div class="list-panel-heading-row">
-            <h2 id="list-heading">買い物リスト</h2>
+            <div class="list-heading-main">
+              <h2 id="list-heading">買い物リスト</h2>
+              <button type="button" id="edit-mode-button" class="edit-mode-button" aria-pressed="false" aria-label="商品名の編集モードをONにする" title="商品名の編集モードをONにする">
+                <img src="./image/pencil.png" alt="" class="edit-mode-icon">
+              </button>
+            </div>
             <p id="status-text" class="status-inline" aria-live="polite">0件</p>
           </div>
         </div>
@@ -164,10 +169,18 @@
       <button type="button" class="drag-handle" aria-label="左のハンドルを長押しして並べ替え" title="左のハンドルを長押しして並べ替え">
         <span class="drag-handle-lines" aria-hidden="true"></span>
       </button>
-      <label class="item-main">
+      <div class="item-main">
         <input type="checkbox" class="item-checkbox" aria-label="完了にする">
-        <span class="item-text"></span>
-      </label>
+        <div class="item-body">
+          <button type="button" class="item-text-button" aria-disabled="true" tabindex="-1">
+            <span class="item-text"></span>
+          </button>
+          <form class="item-edit-form" hidden>
+            <label class="sr-only item-edit-label">商品名を編集</label>
+            <input type="text" class="item-edit-input" inputmode="text" autocomplete="off" maxlength="50">
+          </form>
+        </div>
+      </div>
       <button type="button" class="icon-button delete-button" aria-label="項目を削除">削除</button>
     </li>
   </template>
